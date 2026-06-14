@@ -17,6 +17,7 @@
       <div class="hero-actions">
         <a class="primary" href="https://card.qwertynobody.com/">角色卡生成器</a>
         <a class="secondary" href="https://rp.qwertynobody.com/">RP 剧情触发器</a>
+        <button class="secondary" id="checkStatusBtn" type="button">检测状态</button>
       </div>
     </section>
 
@@ -26,13 +27,13 @@
         <h2>创作工具</h2>
       </div>
       <div class="cards">
-        <a class="tool-card glass" href="https://card.qwertynobody.com/">
+        <a class="tool-card glass" href="https://card.qwertynobody.com/" data-check="https://card.qwertynobody.com/">
           <span class="tag">Card</span>
           <h3>角色卡生成器</h3>
           <p>创建、编辑、导入导出 Tavern 角色卡，支持 JSON / PNG、NPC 设定和卡面预览。</p>
           <span class="go">打开 →</span>
         </a>
-        <a class="tool-card glass" href="https://rp.qwertynobody.com/">
+        <a class="tool-card glass" href="https://rp.qwertynobody.com/" data-check="https://rp.qwertynobody.com/">
           <span class="tag">Story</span>
           <h3>RP 剧情触发器</h3>
           <p>基于角色卡、世界观和其他 NPC 生成剧情钩子、推进节点和开场白。</p>
@@ -47,13 +48,13 @@
         <h2>个人内容</h2>
       </div>
       <div class="cards compact-cards">
-        <a class="tool-card glass" href="https://diary.qwertynobody.com/">
+        <a class="tool-card glass" href="https://diary.qwertynobody.com/" data-check="https://diary.qwertynobody.com/">
           <span class="tag">Diary</span>
           <h3>随笔站</h3>
           <p>朋友圈风格的随笔、图片、音乐和碎碎念。</p>
           <span class="go">打开 →</span>
         </a>
-        <a class="tool-card glass" href="https://notes.qwertynobody.com/">
+        <a class="tool-card glass" href="https://notes.qwertynobody.com/" data-check="https://notes.qwertynobody.com/">
           <span class="tag">Notes</span>
           <h3>Notes</h3>
           <p>如果笔记站还在用，可以从这里进入；不用的话以后再换掉。</p>
@@ -71,24 +72,74 @@
         <em>展开</em>
       </summary>
       <div class="private-grid">
-        <a href="https://qwerty.zo.space/beibei/">
+        <a href="https://qwerty.zo.space/beibei/" data-check="https://qwerty.zo.space/beibei/">
           <span>Beibei Bot 后台</span>
           <small>微信 / 企微客服机器人配置面板</small>
         </a>
-        <a href="https://new-api.qwertynobody.com/">
+        <a href="https://new-api.qwertynobody.com/" data-check="https://new-api.qwertynobody.com/">
           <span>New API</span>
           <small>模型网关与渠道管理</small>
         </a>
-        <a href="https://kiro-go-qwerty.zocomputer.io/">
+        <a href="https://kiro-go-qwerty.zocomputer.io/" data-check="https://kiro-go-qwerty.zocomputer.io/">
           <span>Kiro-Go</span>
           <small>上游服务，暂未绑定 qwertynobody 子域名</small>
         </a>
-        <a href="https://qwerty.zo.space/">
+        <a href="https://windsurf-api-lucas66.zocomputer.io/" data-check="https://windsurf-api-lucas66.zocomputer.io/">
+          <span>Windsurf API</span>
+          <small>上游服务，未绑定 qwertynobody 子域名</small>
+        </a>
+        <a href="https://qwerty.zo.space/" data-check="https://qwerty.zo.space/">
           <span>Zo Space</span>
           <small>个人 Zo Space 首页和路由</small>
         </a>
       </div>
     </details>
   </main>
+  <script>
+    const statusButton = document.getElementById('checkStatusBtn');
+    const checkTargets = [...document.querySelectorAll('[data-check]')];
+
+    function setStatus(el, state, text) {
+      el.dataset.status = state;
+      let badge = el.querySelector('.status-dot');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'status-dot';
+        el.appendChild(badge);
+      }
+      badge.textContent = text;
+    }
+
+    async function checkUrl(url) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      try {
+        await fetch(url + (url.includes('?') ? '&' : '?') + 'hubcheck=' + Date.now(), {
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        return true;
+      } catch {
+        clearTimeout(timer);
+        return false;
+      }
+    }
+
+    async function runStatusCheck() {
+      statusButton.disabled = true;
+      statusButton.textContent = '检测中...';
+      await Promise.all(checkTargets.map(async el => {
+        setStatus(el, 'checking', '检测中');
+        const ok = await checkUrl(el.dataset.check);
+        setStatus(el, ok ? 'ok' : 'bad', ok ? '可达' : '异常');
+      }));
+      statusButton.disabled = false;
+      statusButton.textContent = '重新检测状态';
+    }
+
+    statusButton?.addEventListener('click', runStatusCheck);
+  </script>
 </body>
 </html>
