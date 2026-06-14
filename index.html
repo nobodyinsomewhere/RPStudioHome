@@ -20,7 +20,7 @@
       </div>
       <p class="eyebrow">qwerty tools</p>
       <h1>把零散的小宇宙收在这里</h1>
-      <p class="lead">写东西、搓角色、跑接口、养贝贝——公开工具放在前面，技术后台默认收起。卡片可以直接在这个网页里本地编辑，不会影响别人看到的默认版本。</p>
+      <p class="lead">入口页：少字、直达、点开就用。公开工具放前面，技术后台默认收起。</p>
       <div class="hero-actions">
         <a class="primary" href="https://card.qwertynobody.com/">角色卡生成器</a>
         <a class="secondary" href="https://rp.qwertynobody.com/">RP 剧情触发器</a>
@@ -87,18 +87,18 @@
   </main>
   <script>
     const STORAGE_THEME = 'qwerty_tools_theme';
-    const STORAGE_CARDS = 'qwerty_tools_cards_v2';
+    const STORAGE_CARDS = 'qwerty_tools_cards_v3';
     const defaultCards = [
-      { id: 'card', group: 'creative', tag: 'Card', title: '角色卡生成器', desc: '创建、编辑、导入导出 Tavern 角色卡，支持 JSON / PNG、NPC 设定和卡面预览。', url: 'https://card.qwertynobody.com/' },
-      { id: 'rp', group: 'creative', tag: 'Story', title: 'RP 剧情触发器', desc: '基于角色卡、世界观和其他 NPC 生成剧情钩子、推进节点和开场白。', url: 'https://rp.qwertynobody.com/' },
-      { id: 'diary', group: 'personal', tag: 'Diary', title: '随笔站', desc: '朋友圈风格的随笔、图片、音乐和碎碎念。', url: 'https://diary.qwertynobody.com/' },
-      { id: 'notes', group: 'personal', tag: 'Notes', title: 'Notes', desc: '另一个 GitHub Pages 笔记网页，先作为阅读入口放在这里；以后想改再慢慢整理。', url: 'https://notes.qwertynobody.com/' },
-      { id: 'write', group: 'personal', tag: 'Write', title: '写新文章', desc: '直接进入写作台，在网页里敲正文，一键生成文章页和 posts.json。', url: 'https://notes.qwertynobody.com/editor.html' },
-      { id: 'beibei', group: 'private', tag: 'Bot', title: 'Beibei Bot 后台', desc: '微信 / 企微客服机器人配置面板', url: 'https://qwerty.zo.space/beibei/' },
-      { id: 'new-api', group: 'private', tag: 'API', title: 'New API', desc: '模型网关与渠道管理', url: 'https://new-api.qwertynobody.com/' },
-      { id: 'kiro', group: 'private', tag: 'Upstream', title: 'Kiro-Go', desc: '上游服务，暂未绑定 qwertynobody 子域名', url: 'https://kiro-go-qwerty.zocomputer.io/' },
-      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '上游服务，未绑定 qwertynobody 子域名', url: 'https://windsurf-api-lucas66.zocomputer.io/' },
-      { id: 'space', group: 'private', tag: 'Zo', title: 'Zo Space', desc: '个人 Zo Space 首页和路由', url: 'https://qwerty.zo.space/' }
+      { id: 'card', group: 'creative', tag: 'Card', title: '角色卡生成器', desc: '捏卡、修卡、导出角色卡。', action: '捏卡', url: 'https://card.qwertynobody.com/' },
+      { id: 'rp', group: 'creative', tag: 'Story', title: 'RP 剧情触发器', desc: '生成剧情钩子和开场。', action: '生成', url: 'https://rp.qwertynobody.com/' },
+      { id: 'diary', group: 'personal', tag: 'Diary', title: '随笔站', desc: '看随笔、图片和碎碎念。', action: '打开', url: 'https://diary.qwertynobody.com/' },
+      { id: 'notes', group: 'personal', tag: 'Notes', title: 'Notes', desc: '看笔记和文章。', action: '打开', url: 'https://notes.qwertynobody.com/' },
+      { id: 'write', group: 'personal', tag: 'Write', title: '写新文章', desc: '直达写作台。', action: '写作', url: 'https://notes.qwertynobody.com/editor.html' },
+      { id: 'beibei', group: 'private', tag: 'Bot', title: 'Beibei Bot 后台', desc: '配置贝贝。', action: '管理', url: 'https://qwerty.zo.space/beibei/' },
+      { id: 'new-api', group: 'private', tag: 'API', title: 'New API', desc: '管理模型网关。', action: '管理', url: 'https://new-api.qwertynobody.com/' },
+      { id: 'kiro', group: 'private', tag: 'Upstream', title: 'Kiro-Go', desc: '查看上游服务。', action: '打开', url: 'https://kiro-go-qwerty.zocomputer.io/' },
+      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '查看上游服务。', action: '打开', url: 'https://windsurf-api-lucas66.zocomputer.io/' },
+      { id: 'space', group: 'private', tag: 'Zo', title: 'Zo Space', desc: '打开 Zo Space。', action: '打开', url: 'https://qwerty.zo.space/' }
     ];
 
     let cards = loadCards();
@@ -152,7 +152,7 @@
       if (editMode && selectedId === card.id) el.classList.add('selected');
       el.innerHTML = isPrivate
         ? `<span>${escapeHtml(card.title)}</span><small>${escapeHtml(card.desc)}</small>`
-        : `<span class="tag">${escapeHtml(card.tag || 'Tool')}</span><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.desc)}</p><span class="go">打开 →</span>`;
+        : `<span class="tag">${escapeHtml(card.tag || 'Tool')}</span><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.desc)}</p><span class="go">${escapeHtml(card.action || '打开')} →</span>`;
       el.addEventListener('click', event => {
         if (!editMode) return;
         event.preventDefault();
@@ -181,7 +181,7 @@
     }
 
     function newCard() {
-      const card = { id: `custom-${Date.now()}`, group: 'creative', tag: 'New', title: '新入口', desc: '写一下这个入口的用途。', url: 'https://' };
+      const card = { id: `custom-${Date.now()}`, group: 'creative', tag: 'New', title: '新入口', desc: '一句话用途。', action: '打开', url: 'https://' };
       cards.push(card);
       selectedId = card.id;
       fillForm(card);
