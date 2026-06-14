@@ -3,22 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>qwerty hub</title>
-  <meta name="description" content="qwerty hub：工具、随笔、创作与私用后台入口。" />
+  <title>qwerty tools</title>
+  <meta name="description" content="qwerty tools：创作工具、随笔、笔记与私用后台入口。" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="shell">
     <section class="hero glass">
-      <div class="brand-mark">q</div>
-      <p class="eyebrow">qwerty hub</p>
+      <div class="topbar">
+        <div class="brand-mark">q</div>
+        <div class="theme-switcher" aria-label="切换主题">
+          <button type="button" data-theme-pick="sky">蓝白</button>
+          <button type="button" data-theme-pick="cream">奶油</button>
+          <button type="button" data-theme-pick="night">夜色</button>
+        </div>
+      </div>
+      <p class="eyebrow">qwerty tools</p>
       <h1>把零散的小宇宙收在这里</h1>
-      <p class="lead">写东西、搓角色、跑接口、养贝贝——这些入口都先放在这里。公开工具默认本地保存；技术后台收起来，只给自己偶尔打开。</p>
+      <p class="lead">写东西、搓角色、跑接口、养贝贝——公开工具放在前面，技术后台默认收起。卡片可以直接在这个网页里本地编辑，不会影响别人看到的默认版本。</p>
       <div class="hero-actions">
         <a class="primary" href="https://card.qwertynobody.com/">角色卡生成器</a>
         <a class="secondary" href="https://rp.qwertynobody.com/">RP 剧情触发器</a>
         <button class="secondary" id="checkStatusBtn" type="button">检测状态</button>
+        <button class="secondary" id="editModeBtn" type="button">编辑卡片</button>
       </div>
+    </section>
+
+    <section id="editorPanel" class="editor-panel glass" hidden>
+      <div class="editor-head">
+        <div>
+          <span class="mini-label">Local Editor</span>
+          <h2>编辑首页卡片</h2>
+          <p>只保存在当前浏览器；适合临时调整排序、文案、链接和新增自己的入口。</p>
+        </div>
+        <button class="secondary small" id="resetCardsBtn" type="button">恢复默认</button>
+      </div>
+      <form id="cardForm" class="card-form">
+        <label>分区
+          <select id="cardGroup">
+            <option value="creative">创作工具</option>
+            <option value="personal">个人内容</option>
+            <option value="private">私用后台</option>
+          </select>
+        </label>
+        <label>标签<input id="cardTag" placeholder="Card / Diary / API" /></label>
+        <label>标题<input id="cardTitle" placeholder="入口名称" required /></label>
+        <label>链接<input id="cardUrl" placeholder="https://..." required /></label>
+        <label class="wide">描述<textarea id="cardDesc" placeholder="这张卡片是做什么的"></textarea></label>
+        <div class="form-actions wide">
+          <button class="secondary" id="newCardBtn" type="button">新建空卡</button>
+          <button class="secondary" id="deleteCardBtn" type="button">删除当前</button>
+          <button class="primary" type="submit">保存卡片</button>
+        </div>
+      </form>
     </section>
 
     <section class="section-block">
@@ -26,20 +63,7 @@
         <span>Creative</span>
         <h2>创作工具</h2>
       </div>
-      <div class="cards">
-        <a class="tool-card glass" href="https://card.qwertynobody.com/" data-check="https://card.qwertynobody.com/">
-          <span class="tag">Card</span>
-          <h3>角色卡生成器</h3>
-          <p>创建、编辑、导入导出 Tavern 角色卡，支持 JSON / PNG、NPC 设定和卡面预览。</p>
-          <span class="go">打开 →</span>
-        </a>
-        <a class="tool-card glass" href="https://rp.qwertynobody.com/" data-check="https://rp.qwertynobody.com/">
-          <span class="tag">Story</span>
-          <h3>RP 剧情触发器</h3>
-          <p>基于角色卡、世界观和其他 NPC 生成剧情钩子、推进节点和开场白。</p>
-          <span class="go">打开 →</span>
-        </a>
-      </div>
+      <div class="cards" id="creativeCards"></div>
     </section>
 
     <section class="section-block">
@@ -47,20 +71,7 @@
         <span>Personal</span>
         <h2>个人内容</h2>
       </div>
-      <div class="cards compact-cards">
-        <a class="tool-card glass" href="https://diary.qwertynobody.com/" data-check="https://diary.qwertynobody.com/">
-          <span class="tag">Diary</span>
-          <h3>随笔站</h3>
-          <p>朋友圈风格的随笔、图片、音乐和碎碎念。</p>
-          <span class="go">打开 →</span>
-        </a>
-        <a class="tool-card glass" href="https://notes.qwertynobody.com/" data-check="https://notes.qwertynobody.com/">
-          <span class="tag">Notes</span>
-          <h3>Notes</h3>
-          <p>另一个 GitHub Pages 笔记网页，先作为阅读入口放在这里；以后想改再慢慢整理。</p>
-          <span class="go">打开 →</span>
-        </a>
-      </div>
+      <div class="cards compact-cards" id="personalCards"></div>
     </section>
 
     <details class="private-zone glass">
@@ -71,33 +82,116 @@
         </span>
         <em>展开</em>
       </summary>
-      <div class="private-grid">
-        <a href="https://qwerty.zo.space/beibei/" data-check="https://qwerty.zo.space/beibei/">
-          <span>Beibei Bot 后台</span>
-          <small>微信 / 企微客服机器人配置面板</small>
-        </a>
-        <a href="https://new-api.qwertynobody.com/" data-check="https://new-api.qwertynobody.com/">
-          <span>New API</span>
-          <small>模型网关与渠道管理</small>
-        </a>
-        <a href="https://kiro-go-qwerty.zocomputer.io/" data-check="https://kiro-go-qwerty.zocomputer.io/">
-          <span>Kiro-Go</span>
-          <small>上游服务，暂未绑定 qwertynobody 子域名</small>
-        </a>
-        <a href="https://windsurf-api-lucas66.zocomputer.io/" data-check="https://windsurf-api-lucas66.zocomputer.io/">
-          <span>Windsurf API</span>
-          <small>上游服务，未绑定 qwertynobody 子域名</small>
-        </a>
-        <a href="https://qwerty.zo.space/" data-check="https://qwerty.zo.space/">
-          <span>Zo Space</span>
-          <small>个人 Zo Space 首页和路由</small>
-        </a>
-      </div>
+      <div class="private-grid" id="privateCards"></div>
     </details>
   </main>
   <script>
+    const STORAGE_THEME = 'qwerty_tools_theme';
+    const STORAGE_CARDS = 'qwerty_tools_cards_v2';
+    const defaultCards = [
+      { id: 'card', group: 'creative', tag: 'Card', title: '角色卡生成器', desc: '创建、编辑、导入导出 Tavern 角色卡，支持 JSON / PNG、NPC 设定和卡面预览。', url: 'https://card.qwertynobody.com/' },
+      { id: 'rp', group: 'creative', tag: 'Story', title: 'RP 剧情触发器', desc: '基于角色卡、世界观和其他 NPC 生成剧情钩子、推进节点和开场白。', url: 'https://rp.qwertynobody.com/' },
+      { id: 'diary', group: 'personal', tag: 'Diary', title: '随笔站', desc: '朋友圈风格的随笔、图片、音乐和碎碎念。', url: 'https://diary.qwertynobody.com/' },
+      { id: 'notes', group: 'personal', tag: 'Notes', title: 'Notes', desc: '另一个 GitHub Pages 笔记网页，先作为阅读入口放在这里；以后想改再慢慢整理。', url: 'https://notes.qwertynobody.com/' },
+      { id: 'write', group: 'personal', tag: 'Write', title: '写新文章', desc: '直接进入写作台，在网页里敲正文，一键生成文章页和 posts.json。', url: 'https://notes.qwertynobody.com/editor.html' },
+      { id: 'beibei', group: 'private', tag: 'Bot', title: 'Beibei Bot 后台', desc: '微信 / 企微客服机器人配置面板', url: 'https://qwerty.zo.space/beibei/' },
+      { id: 'new-api', group: 'private', tag: 'API', title: 'New API', desc: '模型网关与渠道管理', url: 'https://new-api.qwertynobody.com/' },
+      { id: 'kiro', group: 'private', tag: 'Upstream', title: 'Kiro-Go', desc: '上游服务，暂未绑定 qwertynobody 子域名', url: 'https://kiro-go-qwerty.zocomputer.io/' },
+      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '上游服务，未绑定 qwertynobody 子域名', url: 'https://windsurf-api-lucas66.zocomputer.io/' },
+      { id: 'space', group: 'private', tag: 'Zo', title: 'Zo Space', desc: '个人 Zo Space 首页和路由', url: 'https://qwerty.zo.space/' }
+    ];
+
+    let cards = loadCards();
+    let editMode = false;
+    let selectedId = cards[0]?.id || null;
+
+    const groups = {
+      creative: document.getElementById('creativeCards'),
+      personal: document.getElementById('personalCards'),
+      private: document.getElementById('privateCards')
+    };
+    const editorPanel = document.getElementById('editorPanel');
+    const editModeBtn = document.getElementById('editModeBtn');
     const statusButton = document.getElementById('checkStatusBtn');
-    const checkTargets = [...document.querySelectorAll('[data-check]')];
+    const form = document.getElementById('cardForm');
+    const fields = {
+      group: document.getElementById('cardGroup'),
+      tag: document.getElementById('cardTag'),
+      title: document.getElementById('cardTitle'),
+      url: document.getElementById('cardUrl'),
+      desc: document.getElementById('cardDesc')
+    };
+
+    function loadCards() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_CARDS) || 'null');
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch {}
+      return structuredClone(defaultCards);
+    }
+
+    function saveCards() {
+      localStorage.setItem(STORAGE_CARDS, JSON.stringify(cards));
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem(STORAGE_THEME, theme);
+      document.querySelectorAll('[data-theme-pick]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themePick === theme);
+      });
+    }
+
+    function renderCard(card) {
+      const isPrivate = card.group === 'private';
+      const el = document.createElement('a');
+      el.className = isPrivate ? 'private-card' : 'tool-card glass';
+      el.href = card.url;
+      el.dataset.check = card.url;
+      el.dataset.cardId = card.id;
+      if (editMode && selectedId === card.id) el.classList.add('selected');
+      el.innerHTML = isPrivate
+        ? `<span>${escapeHtml(card.title)}</span><small>${escapeHtml(card.desc)}</small>`
+        : `<span class="tag">${escapeHtml(card.tag || 'Tool')}</span><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.desc)}</p><span class="go">打开 →</span>`;
+      el.addEventListener('click', event => {
+        if (!editMode) return;
+        event.preventDefault();
+        selectedId = card.id;
+        fillForm(card);
+        renderCards();
+      });
+      return el;
+    }
+
+    function renderCards() {
+      Object.values(groups).forEach(group => group.innerHTML = '');
+      cards.forEach(card => groups[card.group]?.appendChild(renderCard(card)));
+    }
+
+    function fillForm(card) {
+      fields.group.value = card.group;
+      fields.tag.value = card.tag || '';
+      fields.title.value = card.title || '';
+      fields.url.value = card.url || '';
+      fields.desc.value = card.desc || '';
+    }
+
+    function selectedCard() {
+      return cards.find(card => card.id === selectedId) || cards[0];
+    }
+
+    function newCard() {
+      const card = { id: `custom-${Date.now()}`, group: 'creative', tag: 'New', title: '新入口', desc: '写一下这个入口的用途。', url: 'https://' };
+      cards.push(card);
+      selectedId = card.id;
+      fillForm(card);
+      saveCards();
+      renderCards();
+    }
+
+    function escapeHtml(text) {
+      return String(text || '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+    }
 
     function setStatus(el, state, text) {
       el.dataset.status = state;
@@ -113,43 +207,74 @@
     async function runStatusCheck() {
       statusButton.disabled = true;
       statusButton.textContent = '检测中...';
-      checkTargets.forEach(el => setStatus(el, 'checking', '检测中'));
-
+      document.querySelectorAll('[data-check]').forEach(el => setStatus(el, 'checking', '检测中'));
       try {
         const res = await fetch('https://qwerty.zo.space/hub-status?ts=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('status api failed');
         const data = await res.json();
         const byUrl = new Map((data.results || []).map(item => [item.url, item]));
-
-        checkTargets.forEach(el => {
+        document.querySelectorAll('[data-check]').forEach(el => {
           const item = byUrl.get(el.dataset.check);
-          if (!item) {
-            setStatus(el, 'bad', '未知');
-            return;
-          }
-          if (!item.reachable) {
-            setStatus(el, 'bad', item.note === 'timeout' ? '超时' : '不可达');
-            return;
-          }
-          if (item.note === 'private') {
-            setStatus(el, 'private', `${item.status} 私用`);
-            return;
-          }
-          if (item.status >= 400) {
-            setStatus(el, 'bad', `${item.status} 异常`);
-            return;
-          }
+          if (!item) return setStatus(el, 'bad', '未纳入检测');
+          if (!item.reachable) return setStatus(el, 'bad', item.note === 'timeout' ? '超时' : '不可达');
+          if (item.note === 'private') return setStatus(el, 'private', `${item.status} 私用`);
+          if (item.status >= 400) return setStatus(el, 'bad', `${item.status} 异常`);
           setStatus(el, 'ok', `${item.status} 正常`);
         });
       } catch {
-        checkTargets.forEach(el => setStatus(el, 'bad', '检测失败'));
+        document.querySelectorAll('[data-check]').forEach(el => setStatus(el, 'bad', '检测失败'));
       }
-
       statusButton.disabled = false;
       statusButton.textContent = '重新检测状态';
     }
 
-    statusButton?.addEventListener('click', runStatusCheck);
+    document.querySelectorAll('[data-theme-pick]').forEach(btn => {
+      btn.addEventListener('click', () => applyTheme(btn.dataset.themePick));
+    });
+
+    editModeBtn.addEventListener('click', () => {
+      editMode = !editMode;
+      document.body.classList.toggle('editing', editMode);
+      editorPanel.hidden = !editMode;
+      editModeBtn.textContent = editMode ? '完成编辑' : '编辑卡片';
+      if (editMode) fillForm(selectedCard());
+      renderCards();
+    });
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const card = selectedCard();
+      if (!card) return;
+      card.group = fields.group.value;
+      card.tag = fields.tag.value.trim();
+      card.title = fields.title.value.trim() || '未命名入口';
+      card.url = fields.url.value.trim();
+      card.desc = fields.desc.value.trim();
+      saveCards();
+      renderCards();
+    });
+
+    document.getElementById('newCardBtn').addEventListener('click', newCard);
+    document.getElementById('deleteCardBtn').addEventListener('click', () => {
+      if (!selectedId || !confirm('删除当前卡片？')) return;
+      cards = cards.filter(card => card.id !== selectedId);
+      selectedId = cards[0]?.id || null;
+      saveCards();
+      if (selectedId) fillForm(selectedCard());
+      renderCards();
+    });
+    document.getElementById('resetCardsBtn').addEventListener('click', () => {
+      if (!confirm('恢复默认卡片？本地自定义会被清空。')) return;
+      cards = structuredClone(defaultCards);
+      selectedId = cards[0].id;
+      saveCards();
+      fillForm(selectedCard());
+      renderCards();
+    });
+    statusButton.addEventListener('click', runStatusCheck);
+
+    applyTheme(localStorage.getItem(STORAGE_THEME) || 'sky');
+    renderCards();
   </script>
 </body>
 </html>
