@@ -11,11 +11,20 @@
   <main class="shell">
     <section class="hero glass">
       <div class="topbar">
-        <div class="brand-mark">q</div>
-        <div class="theme-switcher" aria-label="切换主题">
-          <button type="button" data-theme-pick="sky">蓝白</button>
-          <button type="button" data-theme-pick="cream">奶油</button>
-          <button type="button" data-theme-pick="night">夜色</button>
+        <div class="wordmark">
+          <span class="wordmark-dot"></span>
+          <span>qwerty.tools</span>
+        </div>
+        <div class="top-controls">
+          <button class="status-chip" id="checkStatusBtn" type="button" title="检测全部入口状态">
+            <span class="signal" id="statusLight"></span>
+            <span id="statusText">状态</span>
+          </button>
+          <div class="theme-switcher" aria-label="切换主题">
+            <button type="button" data-theme-pick="sky">蓝白</button>
+            <button type="button" data-theme-pick="cream">奶油</button>
+            <button type="button" data-theme-pick="night">夜色</button>
+          </div>
         </div>
       </div>
       <p class="eyebrow">qwerty tools</p>
@@ -24,8 +33,7 @@
       <div class="hero-actions">
         <a class="primary" href="https://card.qwertynobody.com/">角色卡生成器</a>
         <a class="secondary" href="https://rp.qwertynobody.com/">RP 剧情触发器</a>
-        <button class="secondary" id="checkStatusBtn" type="button">检测状态</button>
-        <button class="secondary" id="editModeBtn" type="button">编辑卡片</button>
+        <button class="secondary subtle" id="editModeBtn" type="button">编辑卡片</button>
       </div>
     </section>
 
@@ -87,7 +95,7 @@
   </main>
   <script>
     const STORAGE_THEME = 'qwerty_tools_theme';
-    const STORAGE_CARDS = 'qwerty_tools_cards_v3';
+    const STORAGE_CARDS = 'qwerty_tools_cards_v4';
     const defaultCards = [
       { id: 'card', group: 'creative', tag: 'Card', title: '角色卡生成器', desc: '捏卡、修卡、导出角色卡。', action: '捏卡', url: 'https://card.qwertynobody.com/' },
       { id: 'rp', group: 'creative', tag: 'Story', title: 'RP 剧情触发器', desc: '生成剧情钩子和开场。', action: '生成', url: 'https://rp.qwertynobody.com/' },
@@ -97,8 +105,7 @@
       { id: 'beibei', group: 'private', tag: 'Bot', title: 'Beibei Bot 后台', desc: '配置贝贝。', action: '管理', url: 'https://qwerty.zo.space/beibei/' },
       { id: 'new-api', group: 'private', tag: 'API', title: 'New API', desc: '管理模型网关。', action: '管理', url: 'https://new-api.qwertynobody.com/' },
       { id: 'kiro', group: 'private', tag: 'Upstream', title: 'Kiro-Go', desc: '查看上游服务。', action: '打开', url: 'https://kiro-go-qwerty.zocomputer.io/' },
-      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '查看上游服务。', action: '打开', url: 'https://windsurf-api-lucas66.zocomputer.io/' },
-      { id: 'space', group: 'private', tag: 'Zo', title: 'Zo Space', desc: '打开 Zo Space。', action: '打开', url: 'https://qwerty.zo.space/' }
+      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '查看上游服务。', action: '打开', url: 'https://windsurf-api-lucas66.zocomputer.io/' }
     ];
 
     let cards = loadCards();
@@ -113,6 +120,8 @@
     const editorPanel = document.getElementById('editorPanel');
     const editModeBtn = document.getElementById('editModeBtn');
     const statusButton = document.getElementById('checkStatusBtn');
+    const statusLight = document.getElementById('statusLight');
+    const statusText = document.getElementById('statusText');
     const form = document.getElementById('cardForm');
     const fields = {
       group: document.getElementById('cardGroup'),
@@ -201,31 +210,46 @@
         badge.className = 'status-dot';
         el.appendChild(badge);
       }
-      badge.textContent = text;
+      badge.title = text;
+      badge.setAttribute('aria-label', text);
+    }
+
+    function setGlobalStatus(state, text) {
+      statusButton.dataset.status = state;
+      statusLight.dataset.status = state;
+      statusText.textContent = text;
     }
 
     async function runStatusCheck() {
       statusButton.disabled = true;
-      statusButton.textContent = '检测中...';
+      setGlobalStatus('checking', '检测中');
       document.querySelectorAll('[data-check]').forEach(el => setStatus(el, 'checking', '检测中'));
       try {
         const res = await fetch('https://qwerty.zo.space/hub-status?ts=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('status api failed');
         const data = await res.json();
         const byUrl = new Map((data.results || []).map(item => [item.url, item]));
+        let bad = 0;
+        let privateCount = 0;
+        let ok = 0;
         document.querySelectorAll('[data-check]').forEach(el => {
           const item = byUrl.get(el.dataset.check);
-          if (!item) return setStatus(el, 'bad', '未纳入检测');
-          if (!item.reachable) return setStatus(el, 'bad', item.note === 'timeout' ? '超时' : '不可达');
-          if (item.note === 'private') return setStatus(el, 'private', `${item.status} 私用`);
-          if (item.status >= 400) return setStatus(el, 'bad', `${item.status} 异常`);
+          if (!item) { bad++; return setStatus(el, 'bad', '未纳入检测'); }
+          if (!item.reachable) { bad++; return setStatus(el, 'bad', item.note === 'timeout' ? '超时' : '不可达'); }
+          if (item.note === 'private') { privateCount++; return setStatus(el, 'private', `${item.status} 私用`); }
+          if (item.status >= 400) { bad++; return setStatus(el, 'bad', `${item.status} 异常`); }
+          ok++;
           setStatus(el, 'ok', `${item.status} 正常`);
         });
+        if (bad > 0) setGlobalStatus('bad', `${bad} 异常`);
+        else if (privateCount > 0) setGlobalStatus('private', '部分私用');
+        else if (ok > 0) setGlobalStatus('ok', '可用');
+        else setGlobalStatus('bad', '无结果');
       } catch {
         document.querySelectorAll('[data-check]').forEach(el => setStatus(el, 'bad', '检测失败'));
+        setGlobalStatus('bad', '检测失败');
       }
       statusButton.disabled = false;
-      statusButton.textContent = '重新检测状态';
     }
 
     document.querySelectorAll('[data-theme-pick]').forEach(btn => {
