@@ -45,3 +45,5 @@ button.secondary{border:none;cursor:pointer;font:inherit}
 @media (max-width:1100px){.private-grid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:900px){.private-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.private-grid{grid-template-columns:1fr}}
+.status-dot[data-note="private"]{background:rgba(245,158,11,.16);color:#8a5b00}
+[data-status="private"] .status-dot{background:rgba(245,158,11,.16);color:#8a5b00;border-color:rgba(245,158,11,.28)}

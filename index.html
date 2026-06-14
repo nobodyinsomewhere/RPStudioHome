@@ -110,31 +110,41 @@
       badge.textContent = text;
     }
 
-    async function checkUrl(url) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 6000);
-      try {
-        await fetch(url + (url.includes('?') ? '&' : '?') + 'hubcheck=' + Date.now(), {
-          mode: 'no-cors',
-          cache: 'no-store',
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        return true;
-      } catch {
-        clearTimeout(timer);
-        return false;
-      }
-    }
-
     async function runStatusCheck() {
       statusButton.disabled = true;
       statusButton.textContent = '检测中...';
-      await Promise.all(checkTargets.map(async el => {
-        setStatus(el, 'checking', '检测中');
-        const ok = await checkUrl(el.dataset.check);
-        setStatus(el, ok ? 'ok' : 'bad', ok ? '可达' : '异常');
-      }));
+      checkTargets.forEach(el => setStatus(el, 'checking', '检测中'));
+
+      try {
+        const res = await fetch('https://qwerty.zo.space/hub-status?ts=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('status api failed');
+        const data = await res.json();
+        const byUrl = new Map((data.results || []).map(item => [item.url, item]));
+
+        checkTargets.forEach(el => {
+          const item = byUrl.get(el.dataset.check);
+          if (!item) {
+            setStatus(el, 'bad', '未知');
+            return;
+          }
+          if (!item.reachable) {
+            setStatus(el, 'bad', item.note === 'timeout' ? '超时' : '不可达');
+            return;
+          }
+          if (item.note === 'private') {
+            setStatus(el, 'private', `${item.status} 私用`);
+            return;
+          }
+          if (item.status >= 400) {
+            setStatus(el, 'bad', `${item.status} 异常`);
+            return;
+          }
+          setStatus(el, 'ok', `${item.status} 正常`);
+        });
+      } catch {
+        checkTargets.forEach(el => setStatus(el, 'bad', '检测失败'));
+      }
+
       statusButton.disabled = false;
       statusButton.textContent = '重新检测状态';
     }
