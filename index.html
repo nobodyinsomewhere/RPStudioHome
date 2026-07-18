@@ -107,7 +107,10 @@
       { id: 'new-api', group: 'private', tag: 'API', title: 'New API', desc: '管理模型网关。', action: '管理', url: 'https://new-api.qwertynobody.com/' },
       { id: 'model-fetcher', group: 'private', tag: 'Models', title: '模型列表拉取器', desc: '拉 OpenAI-compatible /models。', action: '拉取', url: 'https://qwerty.zo.space/model-fetcher' },
       { id: 'kiro', group: 'private', tag: 'Upstream', title: 'Kiro-Go', desc: '查看上游服务。', action: '打开', url: 'https://kiro-go-qwerty.zocomputer.io/admin' },
-      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '查看上游服务。', action: '打开', url: 'https://windsurf-api-lucas66.zocomputer.io/' }
+      { id: 'windsurf', group: 'private', tag: 'Upstream', title: 'Windsurf API', desc: '查看上游服务。', action: '打开', url: 'https://windsurf-api-lucas66.zocomputer.io/' },
+      { id: 'sub2api', group: 'private', tag: 'API', title: 'Sub2API', desc: '腾讯云新加坡账号与接口管理。', action: '管理', url: 'https://sub.qwertynobody.com/' },
+      { id: 'cpa', group: 'private', tag: 'API', title: 'CPA / CLIProxyAPI', desc: 'CLI 订阅账号兼容 API 网关。', action: '管理', url: 'https://cpa.qwertynobody.com/' },
+      { id: 'kiro-rs-admin', group: 'private', tag: 'Upstream', title: 'kiro.rs-admin', desc: '腾讯云新加坡 Kiro 管理后台。', action: '管理', url: 'https://kiro.qwertynobody.com/admin' }
     ];
 
     function cloneCards(value) {
@@ -150,7 +153,10 @@
     function loadCards() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_CARDS) || 'null');
-        if (Array.isArray(saved) && saved.length) return saved;
+        if (Array.isArray(saved) && saved.length) {
+          const savedIds = new Set(saved.map(card => card.id));
+          return [...saved, ...cloneCards(defaultCards.filter(card => !savedIds.has(card.id)))];
+        }
       } catch {}
       return cloneCards(defaultCards);
     }
